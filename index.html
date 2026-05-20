@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <script>
+    let wrapper;
     let words = [];
     let typed = [];
     let typing = [];
@@ -24,40 +25,44 @@
             }
         }
 
+        result.concat(Array(Math.max(b.length - a.length, 0)).fill("extra"));
+
         return result;
     }
 
     function render() {
-        const wrapper = document.getElementById("wrapper");
-        wrapper.innerHTML = "";
-
         for (let i = 0; i < words.length; i++) {
             let word = words[i];
-            let letters = i == typed.length ? typing : typed[i];
+            let letters = i === typed.length ? typing : typed[i];
 
-            const w = document.createElement("word")
+            const w = wrapper.children[i];
             const evaluation = i <= typed.length ? evaluate(word, letters) : Array(word.length).fill("untyped");
 
             for (let j = 0; j < word.length; j++) {
-                const l = document.createElement("letter")
+                const l = w.children[j];
                 l.innerHTML = word[j];
-                l.classList.add(evaluation[j]);
-                w.appendChild(l)
+                l.className = evaluation[j];
             }
-            let extra = letters?.length - word.length;
+
+            const extra = letters?.length - word.length;
+
             if (extra > 0) {
-                for (let j = 0; j < extra; j++) {
-                    const l = document.createElement("letter")
-                    l.innerHTML = letters[word.length + j];
-                    l.classList.add("extra");
-                    w.appendChild(l)
-                }
+                [...letters].slice(word.length).forEach((letter, i) => {
+                    const l = w.children[word.length + i] ?? document.createElement("letter");
+                    l.innerHTML = letter;
+                    l.className = "extra";
+                    if (!l.parentElement) w.appendChild(l);
+                });
+            } else {
+                const toRemove = w.children.length - word.length;
+                for (let j = 0; j < toRemove; j++) w.removeChild(w.lastChild);
             }
-            wrapper.appendChild(w);
         }
     }
 
     window.onload = async () => {
+        wrapper = document.getElementById("wrapper");
+
         const res = await fetch("./data/english.json");
         let english = await res.json();
 
@@ -65,8 +70,27 @@
             words.push(english[Math.floor(Math.random() * english.length)]);
         }
 
-        render();
+        for (const word of words) {
+            const w = document.createElement("word");
+
+            for (const letter of word) {
+                const l = document.createElement("letter");
+                l.innerHTML = letter;
+                l.classList.add("untyped");
+                w.appendChild(l);
+            }
+            wrapper.appendChild(w);
+        }
     }
+
+
+    function canReturn() {
+        let index = typed.length - 1;
+        if (index < 0) return false;
+        return ["extra", "incorrect", "untyped"].some(v => evaluate(words[index], typed[index] ?? []).includes(v));
+    }
+
+    let shouldReturn = false;
 
     document.addEventListener("keydown", (e) => {
         if (
@@ -76,10 +100,19 @@
         ) {
             typing.push(e.key.toLowerCase());
             render();
-        } else if (e.key === "Backspace" && typing.length > 0) {
-            typing.pop();
+        } else if (e.key === "Backspace") {
+            if (typing.length > 0) {
+                typing.pop();
+            } else if (canReturn()) {
+                if (shouldReturn) {
+                    typing = [...typed.pop()];
+                    shouldReturn = false;
+                } else if (typed.length) {
+                    shouldReturn = true;
+                }
+            }
             render();
-        } else if (e.key == " ") {
+        } else if (e.key === " " && typing.length > 0) {
             typed.push(typing.join(""));
             typing = [];
             render();
