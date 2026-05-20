@@ -30,6 +30,11 @@ letter {
     font-weight: 400;
 }
 
+letter.next {
+    color: #5d6263;
+    background-color: #808788;
+}
+
 letter.untyped {
     color: #5d6263;
 }
