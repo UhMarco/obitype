@@ -26,6 +26,11 @@ word {
     font-size: 24px;
 }
 
+word.incorrect {
+    border-bottom: 2px solid #dd452e;
+    margin-bottom: -2px;
+}
+
 letter {
     font-weight: 400;
 }
