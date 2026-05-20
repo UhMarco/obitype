@@ -1,0 +1,47 @@
+* {
+    font-family: "Roboto-Mono", "vazirharf", monospace;
+    user-select: none;
+    background-color: #313231;
+    color: #f7f5f1;
+}
+
+body {
+    padding-top: 2%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#wrapper {
+    padding-top: 20%;
+    display: flex;
+    flex-wrap: wrap;
+    width: 80%;
+    column-gap: 12px;
+    row-gap: 10px;
+}
+
+word {
+    display: flex;
+    font-size: 24px;
+}
+
+letter {
+    font-weight: 400;
+}
+
+letter.untyped {
+    color: #5d6263;
+}
+
+letter.correct {
+    color: #f7f5f1;
+}
+
+letter.incorrect {
+    color: #dd452e;
+}
+
+letter.extra {
+    color: #9e3423;
+}

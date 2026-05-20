@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>obitype</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<script>
+    let words = [];
+    let typed = [];
+    let typing = [];
+
+    function evaluate(a, b) {
+        let result = [];
+
+        for (let i = 0; i < a.length; i++) {
+            if (i >= b.length) {
+                result.push("untyped");
+            } else if (a[i] == b[i]) {
+                result.push("correct");
+            } else {
+                result.push("incorrect");
+            }
+        }
+
+        return result;
+    }
+
+    function render() {
+        const wrapper = document.getElementById("wrapper");
+        wrapper.innerHTML = "";
+
+        for (let i = 0; i < words.length; i++) {
+            let word = words[i];
+            let letters = i == typed.length ? typing : typed[i];
+
+            const w = document.createElement("word")
+            const evaluation = i <= typed.length ? evaluate(word, letters) : Array(word.length).fill("untyped");
+
+            for (let j = 0; j < word.length; j++) {
+                const l = document.createElement("letter")
+                l.innerHTML = word[j];
+                l.classList.add(evaluation[j]);
+                w.appendChild(l)
+            }
+            let extra = letters?.length - word.length;
+            if (extra > 0) {
+                for (let j = 0; j < extra; j++) {
+                    const l = document.createElement("letter")
+                    l.innerHTML = letters[word.length + j];
+                    l.classList.add("extra");
+                    w.appendChild(l)
+                }
+            }
+            wrapper.appendChild(w);
+        }
+    }
+
+    window.onload = async () => {
+        const res = await fetch("./data/english.json");
+        let english = await res.json();
+
+        for (let i = 0; i < 50; i++) {
+            words.push(english[Math.floor(Math.random() * english.length)]);
+        }
+
+        render();
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (
+            !e.ctrlKey
+            && !e.altKey
+            && /^[a-z]$/.test(e.key)
+        ) {
+            typing.push(e.key.toLowerCase());
+            render();
+        } else if (e.key === "Backspace" && typing.length > 0) {
+            typing.pop();
+            render();
+        } else if (e.key == " ") {
+            typed.push(typing.join(""));
+            typing = [];
+            render();
+        }
+    })
+</script>
+<body>
+    <h1>obitype</h1>
+    <div id="wrapper"></div>
+</body>
+</html>
